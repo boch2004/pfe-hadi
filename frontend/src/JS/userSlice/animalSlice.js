@@ -1,58 +1,59 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-// جلب كل الحيوانات
-export const getanimal = createAsyncThunk("animal/get", async () => {
+const API_URL = "http://localhost:5000/animals"; // ✅ تصحيح الرابط
+
+// ✅ جلب كل الحيوانات
+export const getanimal = createAsyncThunk("animal/get", async (_, { rejectWithValue }) => {
     try {
-        let result = await axios.get("http://localhost:5000/animal/");
-        console.log("Response:", result.data);
-        return result.data; // إرجاع البيانات بدلاً من Promise
+        let response = await axios.get(`${API_URL}/`);
+        return response.data.animals;
     } catch (error) {
-        console.log(error);
-        throw error; // لضمان رفض الطلب عند الفشل
+        return rejectWithValue(error.response?.data || error.message || "Error fetching animals");
     }
 });
 
-// إضافة حيوان جديد
-export const addanimal = createAsyncThunk("animal/add", async (newanimal) => {
+// ✅ إضافة حيوان جديد
+export const addanimal = createAsyncThunk("animal/add", async (newanimal, { rejectWithValue }) => {
     try {
-        let result = await axios.post("http://localhost:5000/animal/add", newanimal);
-        console.log("Response:", result.data);
-        return result.data;
+        let response = await axios.post(`${API_URL}/add`, newanimal);
+        return response.data.animal;
     } catch (error) {
-        console.log(error);
-        throw error;
+        return rejectWithValue(error.response?.data || error.message || "Error adding animal");
     }
 });
 
-// حذف حيوان
-export const deleteanimal = createAsyncThunk("animal/delete", async (id) => {
+// ✅ حذف حيوان
+export const deleteanimal = createAsyncThunk("animal/delete", async (id, { rejectWithValue }) => {
     try {
-        let result = await axios.delete(`http://localhost:5000/animal/${id}`);
-        console.log("Response:", result.data);
-        return id; // إرجاع الـ ID المحذوف لتحديث القائمة
+        let response = await axios.delete(`${API_URL}/${id}`);
+        return id;
     } catch (error) {
-        console.log(error);
-        throw error;
+        return rejectWithValue(error.response?.data || error.message || "Error deleting animal");
     }
 });
 
-// تعديل حيوان
-export const editanimal = createAsyncThunk("animal/edit", async ({ id, edited }) => {
+// ✅ تعديل حيوان
+export const editanimal = createAsyncThunk("animal/edit", async ({ id, edited }, { rejectWithValue }) => {
     try {
-        let result = await axios.put(`http://localhost:5000/animal/${id}`, edited);
-        console.log("Response:", result.data);
-        return result.data;
+        let response = await axios.put(`${API_URL}/${id}`, edited);
+        return response.data.animal;
     } catch (error) {
-        console.log(error);
-        throw error;
+        return rejectWithValue(error.response?.data || error.message || "Error editing animal");
     }
 });
 
-// الحالة الابتدائية
+// ✅ الحالة الابتدائية
 const initialState = {
     animalList: [],
-    status: null,
+    status: "idle",
+    error: null,
+};
+
+// ✅ دالة لتحديث حالة الطلبات
+const setStatus = (state, status, error = null) => {
+    state.status = status;
+    state.error = error;
 };
 
 export const animalSlice = createSlice({
@@ -61,57 +62,41 @@ export const animalSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // حالة جلب الحيوانات
-            .addCase(getanimal.pending, (state) => {
-                state.status = "loading";
-            })
+            // ✅ جلب الحيوانات
+            .addCase(getanimal.pending, (state) => setStatus(state, "loading"))
             .addCase(getanimal.fulfilled, (state, action) => {
-                state.status = "success";
-                state.animalList = action.payload.animals; // تأكد أن `animals` موجود في البيانات القادمة من الـ API
+                setStatus(state, "success");
+                state.animalList = action.payload;
             })
-            .addCase(getanimal.rejected, (state) => {
-                state.status = "fail";
-            })
+            .addCase(getanimal.rejected, (state, action) => setStatus(state, "fail", action.payload))
 
-            // حالة إضافة حيوان
-            .addCase(addanimal.pending, (state) => {
-                state.status = "loading";
-            })
+            // ✅ إضافة حيوان
+            .addCase(addanimal.pending, (state) => setStatus(state, "loading"))
             .addCase(addanimal.fulfilled, (state, action) => {
-                state.status = "success";
-                state.animalList.push(action.payload.animal); // إضافة العنصر الجديد للقائمة
+                setStatus(state, "success");
+                if (action.payload) state.animalList.push(action.payload);
             })
-            .addCase(addanimal.rejected, (state) => {
-                state.status = "fail";
-            })
+            .addCase(addanimal.rejected, (state, action) => setStatus(state, "fail", action.payload))
 
-            // حالة حذف حيوان
-            .addCase(deleteanimal.pending, (state) => {
-                state.status = "loading";
-            })
+            // ✅ حذف حيوان
+            .addCase(deleteanimal.pending, (state) => setStatus(state, "loading"))
             .addCase(deleteanimal.fulfilled, (state, action) => {
-                state.status = "success";
+                setStatus(state, "success");
                 state.animalList = state.animalList.filter(animal => animal._id !== action.payload);
             })
-            .addCase(deleteanimal.rejected, (state) => {
-                state.status = "fail";
-            })
+            .addCase(deleteanimal.rejected, (state, action) => setStatus(state, "fail", action.payload))
 
-            // حالة تعديل حيوان
-            .addCase(editanimal.pending, (state) => {
-                state.status = "loading";
-            })
+            // ✅ تعديل حيوان
+            .addCase(editanimal.pending, (state) => setStatus(state, "loading"))
             .addCase(editanimal.fulfilled, (state, action) => {
-                state.status = "success";
+                setStatus(state, "success");
                 state.animalList = state.animalList.map(animal =>
-                    animal._id === action.payload.animal._id ? action.payload.animal : animal
+                    animal._id === action.payload?._id ? action.payload : animal
                 );
             })
-            .addCase(editanimal.rejected, (state) => {
-                state.status = "fail";
-            });
+            .addCase(editanimal.rejected, (state, action) => setStatus(state, "fail", action.payload));
     },
 });
 
-// تصدير الـ Reducer
+// ✅ تصدير الـ Reducer
 export default animalSlice.reducer;

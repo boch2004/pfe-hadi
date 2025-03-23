@@ -2,57 +2,72 @@ const express = require("express");
 const Animal = require("../models/animal");
 const animalRouter = express.Router();
 
-// Add animal
+// ✅ إضافة حيوان جديد
 animalRouter.post("/add", async (req, res) => {
   try {
     let newAnimal = new Animal(req.body);
     let result = await newAnimal.save();
-    res.send({ animals: result, msg: "Animal is added" });
+    return res.status(201).send({ animal: result, msg: "Animal is added" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).send({ error: "Error adding animal" });
   }
 });
 
-// Get all animals
+// ✅ جلب كل الحيوانات
 animalRouter.get("/", async (req, res) => {
   try {
     let result = await Animal.find();
-    res.send({ animals: result, msg: "All animals" });
+    return res.status(200).send({ animals: result, msg: "All animals" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).send({ error: "Error fetching animals" });
   }
 });
 
-// Get one animal
+// ✅ جلب حيوان واحد عبر الـ ID
 animalRouter.get("/:id", async (req, res) => {
   try {
     let result = await Animal.findById(req.params.id);
-    res.send({ animals: result, msg: "One animal" });
+    if (!result) {
+      return res.status(404).send({ error: "Animal not found" });
+    }
+    return res.status(200).send({ animal: result, msg: "One animal" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).send({ error: "Error fetching animal" });
   }
 });
 
-// Delete animal
+// ✅ حذف حيوان
 animalRouter.delete("/:id", async (req, res) => {
   try {
     let result = await Animal.findByIdAndDelete(req.params.id);
-    res.send({ msg: "Animal is deleted" });
+    if (!result) {
+      return res.status(404).send({ error: "Animal not found" });
+    }
+    return res.status(200).send({ animal: result, msg: "Animal is deleted" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).send({ error: "Error deleting animal" });
   }
 });
 
-// Edit animal
+// ✅ تعديل حيوان
 animalRouter.put("/:id", async (req, res) => {
   try {
     let result = await Animal.findByIdAndUpdate(
-      { _id: req.params.id },
-      { $set: { ...req.body } }
+      req.params.id,
+      { $set: { ...req.body } },
+      { new: true } // ✅ يجعل Mongoose يعيد العنصر المحدث مباشرة
     );
-    res.send({ msg: "Animal is updated" });
+    if (!result) {
+      return res.status(404).send({ error: "Animal not found" });
+    }
+    return res.status(200).send({ animal: result, msg: "Animal is updated" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).send({ error: "Error updating animal" });
   }
 });
 

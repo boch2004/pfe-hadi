@@ -43,6 +43,11 @@ function ColorSchemesExample() {
             <Nav.Link as={Link} to="/Adoption" className="text-white">
               S'adopter
             </Nav.Link>
+            {user && (
+             <Nav.Link as={Link} to="/Ajouter" className="text-white">
+              Ajouter un animal 
+            </Nav.Link>
+            )}
             {!user && (
               <Nav.Link as={Link} to="/Login" className="text-white">
                 Se connecter
@@ -54,6 +59,7 @@ function ColorSchemesExample() {
           <Nav.Link as={Link} to="/profil" className="text-white">
             Profil
           </Nav.Link>
+          
         )}
       </Navbar>
     </>

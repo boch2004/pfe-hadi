@@ -11,6 +11,7 @@ import Register from "./components/Register";
 import PrivateRoute from "./Routes/PrivateRouter";
 import Pronous from "./components/Pronous";
 import Adoption from "./components/Adoption";
+import Ajouter from "./components/Ajouter";
 import Histoires from "./components/Histoires";
 
 function App() {
@@ -26,7 +27,8 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/Nous" element={<Pronous />} />
         <Route path="/Conseil" element={<Conseil />} />
-        <Route path="/histoire" element={<Histoires />} />
+        <Route path="/Ajouter" element={<Ajouter />} />
+        <Route path="/histoire" element={<Histoires />} />        
         <Route path="/Adoption" element={<Adoption />} />
         <Route element={<PrivateRoute />}>
           <Route path="/profil" element={<Profil />} />

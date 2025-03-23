@@ -2,8 +2,11 @@ import React from "react";
 import "./Navbar.css"; // Import du fichier CSS
 import { Link } from "react-router";
 import Login from "./Login";
+import { useSelector } from "react-redux";
 
 function Home() {
+    const user = useSelector((state) => state.user.user);
+
   return (
     <div>
       {/* Conteneur de l'image avec texte superposé */}
@@ -19,11 +22,13 @@ function Home() {
             Des milliers d’animaux attendent une famille aimante. Faites
             ladifférence dès aujourd’hui !
           </p>
+            {!user && (
           <div className="buttons">
             <Link to={"/Login"}>
               <button className="connecter">se connecter</button>
             </Link>
           </div>
+            )}
         </div>
       </div>
     </div>
